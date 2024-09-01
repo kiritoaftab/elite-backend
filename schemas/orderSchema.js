@@ -14,7 +14,7 @@ const reqNumber = {
 const orderSchema = mongoose.Schema({
     vendor: { type: mongoose.Schema.Types.ObjectId, ref: "vendor", required: true },
     product: { type: mongoose.Schema.Types.ObjectId, ref: "product", required: true },
-    name: reqString,
+    cashier : {type:mongoose.Schema.Types.ObjectId,ref : "cashier", required:true},
     unit: reqNumber,
     amountPaid: reqNumber,
     dateCreated:{type:Date, default: Date.now},
