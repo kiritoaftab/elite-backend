@@ -19,6 +19,7 @@ const productSchema = mongoose.Schema({
     costPrice: reqNumber,
     sellingPrice: reqNumber,
     totalOrders: {type:Number,required:true,default:0},
+    status : {type:String, enum:["AVAILABLE","UNAVAILABLE"], default:"AVAILABLE"},
     dateCreated:{type:Date, default: Date.now},
     dateModified:{type:Date, default: Date.now}
 })

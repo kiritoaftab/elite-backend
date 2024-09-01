@@ -1,11 +1,11 @@
-import Cashier from "../schemas/cashierSchema.js";
-import asyncHandler from "express-async-handler";
+import Vendor from "../schemas/vendorSchemas.js";
 import User from "../schemas/userSchema.js";
+import asyncHandler from "express-async-handler";
 import { findById, findByUserId, paginate } from "../manager/finder.js";
 
-export const createCashier = asyncHandler(async (req,res) => {
+export const createVendor = asyncHandler(async (req,res) => {
     try {
-        const {firstName,lastName, phone,password} = req.body;
+        const {firstName,lastName, phone,password, shopName,shopLogo,category} = req.body;
 
         let userDoc = await User.findOne({phone});
         if(userDoc){
@@ -19,19 +19,22 @@ export const createCashier = asyncHandler(async (req,res) => {
             phone,
             username:`${firstName} ${lastName}`,
             password,
-            role:"CASHIER"
+            role:"VENDOR"
         })
 
-        const cashierDoc = await Cashier.create({
+        const vendorDoc = await Vendor.create({
             firstName,
             lastName,
-            user:userDoc._id
+            user:userDoc._id,
+            shopName,
+            shopLogo,
+            category
         });
 
         return res.status(200).json({
             success:true,
-            msg:"Cashier created successfully",
-            cashierDoc
+            msg:"Vendor created successfully",
+            vendorDoc
         });
 
     } catch (error) {
@@ -43,15 +46,15 @@ export const createCashier = asyncHandler(async (req,res) => {
     }
 })
 
-export const fetchCashierById = asyncHandler(async (req,res) => {
+export const fetchVendorById = asyncHandler(async (req,res) => {
     try {
         const id = req.params.id;
 
-        const cashierDoc = await findById(Cashier,id,["user"],'Cashier',res);
+        const vendorDoc = await findById(Vendor,id,["user"],'Vendor',res);
 
         return res.status(200).json({
             success:true,
-            cashierDoc
+            vendorDoc
         });
 
     } catch (error) {
@@ -63,15 +66,15 @@ export const fetchCashierById = asyncHandler(async (req,res) => {
     }
 })
 
-export const fetchCashierByUserId = asyncHandler(async (req,res) => {
+export const fetchVendorByUserId = asyncHandler(async (req,res) => {
     try {
         const userId = req.params.userId;
 
-        const cashierDoc = await findByUserId(Cashier,userId,'Cashier',res);
+        const vendorDoc = await findByUserId(Vendor,userId,'Vendor',res);
 
         return res.status(200).json({
             success:true,
-            cashierDoc
+            vendorDoc
         })
     } catch (error) {
         console.log(error);
@@ -82,7 +85,7 @@ export const fetchCashierByUserId = asyncHandler(async (req,res) => {
     }
 })
 
-export const fetchAllCashier = asyncHandler(async (req,res) => {
+export const fetchAllVendors = asyncHandler(async (req,res) => {
     try {
         const options = {
             page: req.query.page,
@@ -92,14 +95,14 @@ export const fetchAllCashier = asyncHandler(async (req,res) => {
             populateFields: ["user"],
           };
  
-          const { documents: cashier, pagination } = await paginate(
-            Cashier,
+          const { documents: vendors, pagination } = await paginate(
+            Vendor,
             {},
             options
           );
       
           return res.status(200).json({
-            cashier,
+            vendors,
             pagination,
             success: true,
           });
@@ -113,25 +116,28 @@ export const fetchAllCashier = asyncHandler(async (req,res) => {
     }
 })
 
-export const updateCashier = asyncHandler(async (req,res) => {
+export const updateVendor = asyncHandler(async (req,res) => {
     try {
-        const {cashierId, firstName, lastName, password} = req.body;
+        const {vendorId, firstName, lastName, shopName, shopLogo, category, password} = req.body;
 
-        let cashierDoc = await findById(Cashier,cashierId,[],'Cashier',res);
+        let vendorDoc = await findById(Vendor,vendorId,[],'Vendor',res);
 
-        let userDoc = await findById(User,cashierDoc.user,[],'User',res);
+        let userDoc = await findById(User,vendorDoc.user,[],'User',res);
 
         userDoc.username = `${firstName} ${lastName}`;
         userDoc.password = password;
         userDoc = await userDoc.save();
 
-        cashierDoc.firstName = firstName;
-        cashierDoc.lastName = lastName;
-        cashierDoc = await cashierDoc.save();
+        vendorDoc.firstName = firstName;
+        vendorDoc.lastName = lastName;
+        vendorDoc.shopName = shopName;
+        vendorDoc.shopLogo = shopLogo;
+        vendorDoc.category = category;
+        vendorDoc = await vendorDoc.save();
 
         return res.status(200).json({
             success:true,
-            cashierDoc
+            vendorDoc
         })
 
     } catch (error) {
@@ -139,31 +145,6 @@ export const updateCashier = asyncHandler(async (req,res) => {
         return res.status(500).json({
             error,
             success:false
-        })
-    }
-})
-
-export const deleteCashier = asyncHandler(async (req,res) => {
-    try {
-        const id = req.params.id;
-
-        let cashierDoc = await findById(Cashier,id,[],'Cashier',res);
-
-        let userDoc = await User.findByIdAndDelete(cashierDoc.user);
-
-        cashierDoc = await Cashier.findByIdAndDelete(id);
-
-        return res.status(200).json({
-            success:true,
-            cashierDoc,
-            userDoc,
-            msg:"Cashier Deleted"
-        })
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({
-            success:false,
-            error
         })
     }
 })
