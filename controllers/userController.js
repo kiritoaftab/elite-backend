@@ -54,7 +54,7 @@ export const createAdmin = asyncHandler(async (req, res) => {
         });
       } else {
         console.log("Incorrect password," + phone);
-        return res.status(400).json({ message: "Incorrect Password." });
+        return res.status(400).json({ msg: "Incorrect Password." });
       }
     } catch (error) {
       console.log(error);

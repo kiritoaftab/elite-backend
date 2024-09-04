@@ -151,3 +151,77 @@ export const updateProduct = asyncHandler(async (req,res) => {
         })
     }
 })
+
+
+export const getTotalProductCount = asyncHandler(async (req,res) => {
+    try {
+        const totalProducts = await Product.countDocuments();
+        return res.status(200).json({
+            success:true,
+            totalProducts
+        })
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success:false,
+            error
+        })
+    }
+})
+
+export const getTotalProfit = asyncHandler(async (req,res) => {
+    try {
+        const result = await Product.aggregate([
+            {
+                $group: {
+                    _id: null,
+                    totalProfit: {
+                        $sum: {
+                            $multiply: [
+                                { $subtract: ["$sellingPrice", "$costPrice"] },
+                                "$totalOrders"
+                            ]
+                        }
+                    }
+                }
+            }
+        ]);
+
+        const totalProfit = result[0]?.totalProfit || 0;
+
+        return res.status(200).json({
+            success:true,
+            totalProfit
+        });
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success:false,
+            error
+        })
+    }
+})
+
+export const getTotalOrders = asyncHandler(async (req,res) => {
+    try {
+        const result = await Product.aggregate()
+        .group({
+            _id: null, 
+            totalOrders: {$sum : "$totalOrders"}
+        });
+
+        const totalOrders = result[0] ? result[0].totalOrders : 0;
+
+        return res.status(200).json({
+            success:true,
+            totalOrders
+        })
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success:true,
+            error
+        })
+    }
+})

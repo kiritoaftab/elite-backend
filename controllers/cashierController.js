@@ -167,3 +167,32 @@ export const deleteCashier = asyncHandler(async (req,res) => {
         })
     }
 })
+
+export const getTotalCashierCount = asyncHandler(async (req,res) => {
+    try {
+        const totalCashiers = await Cashier.countDocuments();
+
+        const result = await Cashier.aggregate()
+            .group({
+                _id: null, 
+                totalSales: { $sum: "$totalSale" },
+                totalOrders: {$sum : "$totalOrders"}
+            });
+        
+        const totalSales = result[0] ? result[0].totalSales : 0;
+        const totalOrders = result[0] ? result[0].totalOrders : 0;
+
+        return res.status(200).json({
+            success:true,
+            totalCashiers,
+            totalSales,
+            totalOrders
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success:false,
+            error
+        })
+    }
+})

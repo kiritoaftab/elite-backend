@@ -148,3 +148,43 @@ export const updateVendor = asyncHandler(async (req,res) => {
         })
     }
 })
+
+export const getTotalVendorCount = asyncHandler(async (req,res) => {
+    try {
+        const totalVendors = await Vendor.countDocuments();
+
+        return res.status(200).json({
+            success:true,
+            totalVendors
+        })
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success:false,
+            error
+        })
+    }
+})
+
+export const getTotalSales = async (req,res) => {
+    try {
+        const result = await Vendor.aggregate()
+            .group({
+                _id: null, 
+                totalSales: { $sum: "$totalSale" }
+            });
+
+        const totalSalesSum = result[0] ? result[0].totalSales : 0;
+        console.log("Total Sales:", totalSalesSum);
+        return res.status(200).json({
+            success:true,
+            totalSalesSum
+        })
+    } catch (error) {
+        console.error("Error calculating total sales:", error);
+        return res.status(500).json({
+            success:false,
+            error
+        })
+    }
+};
