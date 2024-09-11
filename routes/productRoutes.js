@@ -1,5 +1,5 @@
 import express from 'express';
-import { createProduct, fetchAllProducts, fetchProductById, fetchProductByVendor, getTotalOrders, getTotalProductCount, getTotalProfit, updateProduct } from '../controllers/productController.js';
+import { createProduct, fetchAllProducts, fetchProductById, fetchProductByVendor, fetchProductsByName, getTotalOrders, getTotalProductCount, getTotalProfit, updateProduct } from '../controllers/productController.js';
 
 const productRoutes = express.Router();
 
@@ -11,6 +11,7 @@ productRoutes.route('/update').post(updateProduct);
 productRoutes.route('/getTotalCount').get(getTotalProductCount);
 productRoutes.route('/getTotalProfit').get(getTotalProfit);
 productRoutes.route('/getTotalOrders').get(getTotalOrders);
+productRoutes.route('/query/:query').get(fetchProductsByName);
 
 
 export default productRoutes;

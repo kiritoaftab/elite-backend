@@ -225,3 +225,26 @@ export const getTotalOrders = asyncHandler(async (req,res) => {
         })
     }
 })
+
+export const fetchProductsByName = asyncHandler(async (req,res) => {
+    try {
+        const query = req.params.query;
+        const regexPattern = new RegExp(query, "i");
+
+        const products = await Product.find({
+            name: { $regex: regexPattern },
+          });
+      
+        return res.status(200).json({
+            success:true,
+            products
+        });
+        
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success:false,
+            error
+        })
+    }
+})
