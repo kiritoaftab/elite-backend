@@ -1,6 +1,8 @@
 import asyncHandler from "express-async-handler";
 import Product from "../schemas/productSchema.js";
+import Vendor from '../schemas/vendorSchemas.js';
 import { findById, paginate } from "../manager/finder.js";
+import mongoose from "mongoose";
 
 
 
@@ -246,5 +248,68 @@ export const fetchProductsByName = asyncHandler(async (req,res) => {
             success:false,
             error
         })
+    }
+})
+
+export const fetchSalesStatByVendor = asyncHandler(async (req, res) => {
+    try {
+        const vendorId = req.params.vendor; // Vendor ID from params
+
+        const vendorObjectId = new mongoose.Types.ObjectId(vendorId);
+        const stats = await Product.aggregate([
+            {
+                $match: {
+                    vendor: vendorObjectId, // Match the vendor
+                },
+            },
+            {
+                $addFields: {
+                    totalSales: { $multiply: ["$totalOrders", "$sellingPrice"] }, // totalOrders * sellingPrice
+                    totalCost: { $multiply: ["$totalOrders", "$costPrice"] },     // totalOrders * costPrice
+                    totalProfit: {
+                        $multiply: ["$totalOrders", { $subtract: ["$sellingPrice", "$costPrice"] }], // totalOrders * (sellingPrice - costPrice)
+                    },
+                },
+            },
+            {
+                $group: {
+                    _id: "$vendor",
+                    totalSales: { $sum: "$totalSales" },   // Sum of totalSales
+                    totalCost: { $sum: "$totalCost" },     // Sum of totalCost
+                    totalProfit: { $sum: "$totalProfit" }, // Sum of totalProfit
+                },
+            },
+        ]);
+
+        return res.status(200).json({
+            success: true,
+            data: stats[0] || { totalSales: 0, totalCost: 0, totalProfit: 0 }, // Return 0 if no data found
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success: false,
+            error,
+        });
+    }
+});
+
+
+export const resetDatabase = asyncHandler(async (req,res) => {
+    try {
+        await Product.updateMany({}, { $set: { totalOrders: 0 } });  // Reset all totalOrders to 0
+
+        await Vendor.updateMany({},{$set : {totalSale: 0, totalOrders: 0 }})
+
+        return res.status(200).json({
+            success: true,
+            message: "All product orders have been reset to 0"
+        });
+    } catch (error) {
+       console.log(error);
+       return res.status(500).json({
+        success:false,
+        error
+       }) 
     }
 })
