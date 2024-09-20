@@ -166,3 +166,61 @@ export const fetchAllPayments = asyncHandler(async (req, res) => {
     });
   }
 });
+
+export const fetchPaymentReports = asyncHandler(async (req,res) => {
+  try {
+
+    const totalCash = await Payments.aggregate([
+      {
+        $match: { mode: "CASH", status: "PAID" }
+      },
+      {
+        $group: {
+          _id: null,
+          totalAmount: { $sum: "$totalAmount" }
+        }
+      }
+    ]);
+
+    // Total for UPI
+    const totalUpi = await Payments.aggregate([
+      {
+        $match: { mode: "UPI", status: "PAID" }
+      },
+      {
+        $group: {
+          _id: null,
+          totalAmount: { $sum: "$totalAmount" }
+        }
+      }
+    ]);
+
+    // Total for STAFF
+    const totalStaff = await Payments.aggregate([
+      {
+        $match: { mode: "STAFF", status: "PAID" }
+      },
+      {
+        $group: {
+          _id: null,
+          totalAmount: { $sum: "$totalAmount" }
+        }
+      }
+    ]);
+
+    // Return totals in the response
+    return res.status(200).json({
+      success: true,
+      cashPaid: totalCash.length > 0 ? totalCash[0].totalAmount : 0,
+      upiPaid: totalUpi.length > 0 ? totalUpi[0].totalAmount : 0,
+      staffPaid: totalStaff.length > 0 ? totalStaff[0].totalAmount : 0
+    });
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success:false,
+      error
+    })
+  }
+})

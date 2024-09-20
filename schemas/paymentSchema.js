@@ -13,7 +13,7 @@ const reqNumber = {
 
 const paymentSchema = mongoose.Schema({ //NEED TO ENSURE SAME VENDORS ORDERS ARE CREATED here 
     ordersList: [{ type: mongoose.Schema.Types.ObjectId, ref: "orders", required: true }],
-    mode: { type: String, enum: ['CASH','UPI'], required: true , default:'CASH' },
+    mode: { type: String, enum: ['CASH','UPI','STAFF'], required: true , default:'CASH' },
     totalAmount: reqNumber,
     status:{type:String,enum: ["PAID","NOT_PAID"], default:"NOT_PAID"},
     dateCreated:{type:Date, default: Date.now},
